@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Open_Sans, Bowlby_One_SC } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
@@ -37,14 +35,26 @@ export const viewport: Viewport = {
   themeColor: "#F05454",
 };
 
+const primaryFont = Bowlby_One_SC({ 
+  weight: "400", 
+  subsets: ["latin"],
+  variable: "--font-bowlby-one-sc",
+});
+
+const secondaryFont = Open_Sans({ 
+  weight: "800", 
+  subsets: ["latin"],
+  variable: "--font-open-sans",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={`${primaryFont.variable} ${secondaryFont.variable}`}>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }
