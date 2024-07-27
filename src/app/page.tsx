@@ -3,10 +3,49 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import NavLink from './components/NavLink';
+import SkeletonBox from './components/SkeletonBox';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { fetchImages } from '../utils/google';
+
+/**
+ * Google Map Settings
+ */
+const MapSettings = {
+  style: {
+    height: '100%',
+    width: '100%',
+  },
+  center: {
+    lat: 14.5652, // De La Salle University Manila
+    lng: 120.9930,
+  },
+  zoom: 15,
+};
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState('shelter-finder');
+  const [isLoading, setIsLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadImages() {
+      // Set loading to true when starting to fetch
+      setIsLoading(true);
+
+      try {
+        const fetchedImages = await fetchImages('De La Salle University Manila', 5);
+        setImages(fetchedImages);
+      } catch (error) {
+        console.error('Error loading images:', error);
+      } finally {
+        // Set loading to false when done, regardless of success or failure
+        setIsLoading(false); 
+      }
+    }
+  
+    loadImages();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,8 +125,75 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-grow pt-16">
         {/* Shelter Finder Section */}
-        <section id="shelter-finder" className="bg-[#F6F4E6] h-screen flex items-center justify-center">
-          <h2 className="font-primary text-4xl font-bold">Shelter Finder</h2>
+        <section id="shelter-finder" className="bg-[#F6F4E6] min-h-screen flex flex-col md:flex-row p-4 md:p-8 uppercase">
+          {/* Left Side - Map */}
+          <div className="w-full md:w-1/2 p-4">
+            {isLoading ? (
+              <SkeletonBox className="w-full h-96" />
+            ) : (
+              <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GCP_API_KEY as string}>
+                <GoogleMap
+                  mapContainerStyle={MapSettings.style}
+                  center={MapSettings.center}
+                  zoom={MapSettings.zoom}
+                >
+                  <Marker position={MapSettings.center} />
+                </GoogleMap>
+              </LoadScript>
+            )}
+          </div>
+
+          {/* Right Side - Shelter Details */}
+          <div className="w-full md:w-1/2 p-4 flex flex-col">
+            {/* Image and Name Placeholder */}
+            {isLoading ? (
+              <SkeletonBox className="h-1/3 mb-4" />
+            ) : (
+              <div className="h-1/3 bg-white rounded-lg shadow-md mb-4 relative overflow-hidden">
+                {images.length > 0 && (
+                  <Image 
+                    src={images[2]}
+                    alt="De La Salle University Manila"
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                )}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C2C2C] to-transparent text-white p-4">
+                  <p className="font-primary text-2xl md:text-3xl font-bold">DE LA SALLE UNIVERSITY MANILA</p>
+                </div>
+              </div>
+            )}
+
+            {/* Info Boxes */}
+            <div className="flex justify-between mb-4">
+              {[
+                { label: 'CAPACITY', value: '20,000' },
+                { label: 'CITY', value: 'MANILA' },
+                { label: 'FOUNDED', value: '1911' }
+              ].map((item) => (
+                <div key={item.label} className="w-[30%]">
+                  {isLoading ? (
+                    <SkeletonBox className="h-24" />
+                  ) : (
+                    <div className="bg-white rounded-lg shadow-md p-4">
+                      <h3 className="font-sans text-sm mb-2 text-center">{item.label}</h3>
+                      <p className="font-primary text-xl text-center text-gray-600">{item.value}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Additional Details */}
+            {isLoading ? (
+              <SkeletonBox className="flex-grow" />
+            ) : (
+              <div className="flex-grow bg-white rounded-lg shadow-md p-4">
+                <h3 className="font-bold mb-2">ADDITIONAL DETAILS</h3>
+                <p className="text-gray-600">De La Salle University is a private, Catholic research university located in Taft Avenue, Malate, Manila, Philippines. It was founded in 1911 by the Brothers of the Christian Schools and is the first De La Salle school in the Philippines.</p>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Earthquake Monitor Section */}
