@@ -28,6 +28,22 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [images, setImages] = useState<string[]>([]);
 
+  const isEarthquakeSection = activeSection === 'earthquake-monitor';
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const smoothScroll = (targetId: string) => {
+    const target = document.getElementById(targetId);
+    if (target) {
+        window.scrollTo({
+            top: target.offsetTop - 64,
+            behavior: 'smooth'
+        });
+    }
+  };
+
   useEffect(() => {
     async function loadImages() {
       // Set loading to true when starting to fetch
@@ -48,31 +64,36 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const shelterSection = document.getElementById('shelter-finder');
-      const earthquakeSection = document.getElementById('earthquake-monitor');
-      
-      if (shelterSection && earthquakeSection) {
-        const shelterRect = shelterSection.getBoundingClientRect();
-        const earthquakeRect = earthquakeSection.getBoundingClientRect();
-        
-        if (earthquakeRect.top <= 0 && earthquakeRect.bottom > 0) {
-          setActiveSection('earthquake-monitor');
-        } else if (shelterRect.top <= 0 && shelterRect.bottom > 0) {
-          setActiveSection('shelter-finder');
-        }
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const shelterSection = document.getElementById('shelter-finder');
+          const earthquakeSection = document.getElementById('earthquake-monitor');
+          
+          if (shelterSection && earthquakeSection) {
+            const shelterRect = shelterSection.getBoundingClientRect();
+            const earthquakeRect = earthquakeSection.getBoundingClientRect();
+            
+            const windowHeight = window.innerHeight;
+            const threshold = windowHeight / 2;
+  
+            if (earthquakeRect.top <= threshold) {
+              setActiveSection('earthquake-monitor');
+            } else if (shelterRect.top <= threshold) {
+              setActiveSection('shelter-finder');
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
-
+  
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Call once to set initial state
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const isEarthquakeSection = activeSection === 'earthquake-monitor';
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   return (
     <div className="flex flex-col min-h-screen font-sans">
@@ -96,10 +117,26 @@ export default function Home() {
 
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center space-x-6">
-            <NavLink href="#shelter-finder" isActive={activeSection === 'shelter-finder'} isEarthquakeSection={isEarthquakeSection}>
+            <NavLink 
+              href="#shelter-finder" 
+              isActive={activeSection === 'shelter-finder'} 
+              isEarthquakeSection={isEarthquakeSection}
+              onClick={(e) => {
+                e.preventDefault();
+                smoothScroll('shelter-finder');
+              }}
+            >
               SHELTER FINDER
             </NavLink>
-            <NavLink href="#earthquake-monitor" isActive={activeSection === 'earthquake-monitor'} isEarthquakeSection={isEarthquakeSection}>
+            <NavLink 
+              href="#earthquake-monitor" 
+              isActive={activeSection === 'earthquake-monitor'} 
+              isEarthquakeSection={isEarthquakeSection}
+              onClick={(e) => {
+                e.preventDefault();
+                smoothScroll('earthquake-monitor');
+              }}
+            >
               EARTHQUAKE MONITOR
             </NavLink>
             <button className={`font-primary border-2 px-4 py-2 rounded transition-colors duration-300 tracking-tighter ${isEarthquakeSection ? 'text-[#F05454] border-[#F05454] hover:bg-[#F05454] hover:text-[#F6F4E6]' : 'text-white border-white hover:bg-white hover:text-[#F05454]'}`}>
@@ -110,10 +147,30 @@ export default function Home() {
 
         {/* Mobile Menu */}
         <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-4`}>
-          <NavLink href="#shelter-finder" isActive={activeSection === 'shelter-finder'} isEarthquakeSection={isEarthquakeSection} mobile>
+          <NavLink 
+            href="#shelter-finder" 
+            isActive={activeSection === 'shelter-finder'} 
+            isEarthquakeSection={isEarthquakeSection} 
+            mobile
+            onClick={(e) => {
+              e.preventDefault();
+              smoothScroll('shelter-finder');
+              toggleMenu(); // Close the mobile menu after clicking
+            }}
+          >
             SHELTER FINDER
           </NavLink>
-          <NavLink href="#earthquake-monitor" isActive={activeSection === 'earthquake-monitor'} isEarthquakeSection={isEarthquakeSection} mobile>
+          <NavLink 
+            href="#earthquake-monitor" 
+            isActive={activeSection === 'earthquake-monitor'} 
+            isEarthquakeSection={isEarthquakeSection} 
+            mobile
+            onClick={(e) => {
+              e.preventDefault();
+              smoothScroll('earthquake-monitor');
+              toggleMenu(); // Close the mobile menu after clicking
+            }}
+          >
             EARTHQUAKE MONITOR
           </NavLink>
           <button className={`w-full text-center font-primary border-2 px-4 py-2 mt-2 rounded transition-colors duration-300 tracking-tighter ${isEarthquakeSection ? 'text-[#F05454] border-[#F05454] hover:bg-[#F05454] hover:text-[#F6F4E6]' : 'text-white border-white hover:bg-white hover:text-[#F05454]'}`}>
@@ -126,8 +183,8 @@ export default function Home() {
       <main className="flex-grow pt-16">
         {/* Shelter Finder Section */}
         <section id="shelter-finder" className="bg-[#F6F4E6] min-h-screen flex flex-col md:flex-row p-4 md:p-8 uppercase">
-          {/* Left Side - Map */}
-          <div className="w-full md:w-1/2 p-4">
+          {/* Left Side - Map (desktop only) */}
+          <div className="hidden md:block w-full md:w-1/2 p-4">
             {isLoading ? (
               <SkeletonBox className="w-full h-96" />
             ) : (
@@ -147,9 +204,9 @@ export default function Home() {
           <div className="w-full md:w-1/2 p-4 flex flex-col">
             {/* Image and Name Placeholder */}
             {isLoading ? (
-              <SkeletonBox className="h-1/3 mb-4" />
+              <SkeletonBox className="h-40 md:h-1/3 mb-4" />
             ) : (
-              <div className="h-1/3 bg-white rounded-lg shadow-md mb-4 relative overflow-hidden">
+              <div className="h-40 md:h-1/3 bg-white rounded-lg shadow-md mb-4 relative overflow-hidden">
                 {images.length > 0 && (
                   <Image 
                     src={images[2]}
@@ -159,7 +216,7 @@ export default function Home() {
                   />
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C2C2C] to-transparent text-white p-4">
-                  <p className="font-primary text-2xl md:text-3xl font-bold">DE LA SALLE UNIVERSITY MANILA</p>
+                  <p className="font-primary text-xl md:text-2xl lg:text-3xl font-bold">DE LA SALLE UNIVERSITY MANILA</p>
                 </div>
               </div>
             )}
@@ -175,13 +232,30 @@ export default function Home() {
                   {isLoading ? (
                     <SkeletonBox className="h-24" />
                   ) : (
-                    <div className="bg-white rounded-lg shadow-md p-4">
-                      <h3 className="font-sans text-sm mb-2 text-center">{item.label}</h3>
-                      <p className="font-primary text-xl text-center text-gray-600">{item.value}</p>
+                    <div className="bg-white rounded-lg shadow-md p-2 md:p-4">
+                      <h3 className="font-sans text-xs md:text-sm mb-1 md:mb-2 text-center">{item.label}</h3>
+                      <p className="font-primary text-sm md:text-xl text-center text-gray-600">{item.value}</p>
                     </div>
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Map (mobile only) */}
+            <div className="md:hidden w-full h-64 mb-4">
+              {isLoading ? (
+                <SkeletonBox className="w-full h-full" />
+              ) : (
+                <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GCP_API_KEY as string}>
+                  <GoogleMap
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    center={MapSettings.center}
+                    zoom={MapSettings.zoom}
+                  >
+                    <Marker position={MapSettings.center} />
+                  </GoogleMap>
+                </LoadScript>
+              )}
             </div>
 
             {/* Additional Details */}
@@ -190,7 +264,7 @@ export default function Home() {
             ) : (
               <div className="flex-grow bg-white rounded-lg shadow-md p-4">
                 <h3 className="font-bold mb-2">ADDITIONAL DETAILS</h3>
-                <p className="text-gray-600">De La Salle University is a private, Catholic research university located in Taft Avenue, Malate, Manila, Philippines. It was founded in 1911 by the Brothers of the Christian Schools and is the first De La Salle school in the Philippines.</p>
+                <p className="text-gray-600 text-sm md:text-base">De La Salle University is a private, Catholic research university located in Taft Avenue, Malate, Manila, Philippines. It was founded in 1911 by the Brothers of the Christian Schools and is the first De La Salle school in the Philippines.</p>
               </div>
             )}
           </div>
