@@ -18,3 +18,15 @@ export const fetchImages = async (query: string, num: number = 1) => {
     return [];
   }
 }
+
+export const getImage = async (query: string) => {
+  const images = await fetchImages(query, 7);
+
+  // Filter images to not contain images like https://appassets.mvtdev.com/map/
+  const filteredImages = images.filter((img : string) => !img.includes('https://appassets.mvtdev.com/map/'));
+  
+  // Find in the images array the first image that is not null (jpg, jpeg, png)
+  const image = filteredImages.find((img : string) => img.match(/\.(jpeg|jpg|png)$/));
+
+  return image ?? images[0];
+}
