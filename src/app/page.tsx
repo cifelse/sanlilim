@@ -209,7 +209,7 @@ export default function Home() {
 
             {/* Map */}
             <div className="h-64 relative">
-              {/* <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} /> */}
+              <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} />
             </div>
 
             {/* Slider */}
