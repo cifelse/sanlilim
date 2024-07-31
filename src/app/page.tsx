@@ -120,11 +120,7 @@ export default function Home() {
 
           {/* Left Side - Map (desktop only) */}
           <div className="hidden md:block w-full md:w-1/2 p-4">
-            {isLoading ? (
-              <SkeletonBox className="w-full h-96" />
-            ) : (
-              <Map markers={sheltersData} />
-            )}
+            <Map markers={sheltersData} />
           </div>
 
           {/* Right Side - Shelter Details */}
@@ -172,11 +168,7 @@ export default function Home() {
 
             {/* Map (mobile only) */}
             <div className="md:hidden w-full h-64 mb-4">
-              {isLoading ? (
-                <SkeletonBox className="w-full h-full" />
-              ) : (
-                <Map markers={sheltersData} />
-              )}
+              <Map markers={sheltersData} />
             </div>
 
             {/* Additional Details */}
@@ -217,7 +209,7 @@ export default function Home() {
 
             {/* Map */}
             <div className="h-64 relative">
-              <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} />
+              {/* <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} /> */}
             </div>
 
             {/* Slider */}
