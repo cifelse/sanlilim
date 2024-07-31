@@ -4,23 +4,26 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import SkeletonBox from './components/SkeletonBox';
 import Map, { Shelter } from './components/Map';
+import EarthquakeMap from './components/EarthquakeMap';
 import { getImage } from '../utils/google';
 import sheltersDataJson from '../../public/data/shelters.json';
+import earthquakesDataJson from '../../public/data/earthquakes.json';
 import Navbar from './components/Navbar';
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState('shelter-finder');
+  // Shelter Finder
   const [isLoading, setIsLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [image, setImage] = useState<string>("");
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
+
+  // Earthquake Monitor
   const [magnitude, setMagnitude] = useState(5.5);
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
 
+  // Misc
+  const [activeSection, setActiveSection] = useState('shelter-finder');
   const isEarthquakeSection = activeSection === 'earthquake-monitor';
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   const handleMarkerClick = async (shelter: Shelter) => {
     setSelectedShelter(shelter);
@@ -189,8 +192,127 @@ export default function Home() {
         </section>
 
         {/* Earthquake Monitor Section */}
-        <section id="earthquake-monitor" className="bg-[#F05454] h-screen flex items-center justify-center">
-          <h2 className="font-primary text-4xl font-bold text-white">Earthquake Monitor</h2>
+        <section id="earthquake-monitor" className="bg-[#F05454] min-h-screen flex flex-col md:flex-row p-4 md:p-8">
+          {/* Mobile View */}
+          <div className="md:hidden w-full flex flex-col space-y-4">
+            {/* Province Dropdown */}
+            <select 
+              className="w-full p-2 rounded"
+              value={selectedProvince}
+              onChange={(e) => setSelectedProvince(e.target.value)}
+            >
+              <option value="">Select Province</option>
+              {/* Add province options here */}
+            </select>
+
+            {/* City/Municipality Dropdown */}
+            <select 
+              className="w-full p-2 rounded"
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+            >
+              <option value="">Select City/Municipality</option>
+              {/* Add city options here */}
+            </select>
+
+            {/* Map */}
+            <div className="h-64 relative">
+              <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} />
+            </div>
+
+            {/* Slider */}
+            <div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.1"
+                value={magnitude}
+                onChange={(e) => setMagnitude(parseFloat(e.target.value))}
+                className="w-full"
+              />
+              <p className="text-white text-center mt-2">Magnitude: {magnitude}</p>
+            </div>
+
+            {/* Info Boxes */}
+            <div className="flex justify-between">
+              {['Population', 'Risk', '# of Evacuation'].map((item) => (
+                <div key={item} className="w-[30%] bg-white rounded-lg shadow-md p-2">
+                  <h3 className="font-sans text-xs mb-1 text-center">{item}</h3>
+                  <p className="font-primary text-sm text-center text-gray-600">N/A</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Additional Details */}
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="font-bold mb-2 text-sm">ADDITIONAL DETAILS</h3>
+              <p className="text-gray-600 text-xs">
+                Additional earthquake and location details will be displayed here.
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden md:flex w-full">
+            {/* Left Side - Earthquake Map */}
+            <div className="w-1/2 p-4 flex flex-col">
+              <div className="flex-grow relative">
+                <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} />
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.1"
+                value={magnitude}
+                onChange={(e) => setMagnitude(parseFloat(e.target.value))}
+                className="w-full mt-4"
+              />
+              <p className="text-white text-center mt-2">Magnitude: {magnitude}</p>
+            </div>
+
+            {/* Right Side - Details */}
+            <div className="w-1/2 p-4 flex flex-col">
+              {/* 1st Row: Dropdowns */}
+              <div className="flex justify-between mb-4">
+                <select 
+                  className="w-[48%] p-2 rounded"
+                  value={selectedProvince}
+                  onChange={(e) => setSelectedProvince(e.target.value)}
+                >
+                  <option value="">Select Province</option>
+                  {/* Add province options here */}
+                </select>
+                <select 
+                  className="w-[48%] p-2 rounded"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                >
+                  <option value="">Select City/Municipality</option>
+                  {/* Add city options here */}
+                </select>
+              </div>
+
+              {/* 2nd Row: Info Boxes */}
+              <div className="flex justify-between mb-4">
+                {['Population', 'Risk', '# of Evacuation'].map((item) => (
+                  <div key={item} className="w-[30%] bg-white rounded-lg shadow-md p-4">
+                    <h3 className="font-sans text-sm mb-2 text-center">{item}</h3>
+                    <p className="font-primary text-xl text-center text-gray-600">N/A</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* 3rd Row: Additional Details */}
+              <div className="flex-grow bg-white rounded-lg shadow-md p-4">
+                <h3 className="font-bold mb-2">ADDITIONAL DETAILS</h3>
+                <p className="text-gray-600 text-sm md:text-base">
+                  Additional earthquake and location details will be displayed here.
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
 
