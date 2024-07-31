@@ -7,7 +7,7 @@ interface EarthquakeMapProps {
 }
 
 interface Earthquake {
-  datetime: string;
+  datetime: number;
   depth: number;
   magnitude: number;
   location: string;
