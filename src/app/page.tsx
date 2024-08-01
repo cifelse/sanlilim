@@ -520,10 +520,12 @@ export default function Home() {
               <div className="flex-grow bg-white rounded-lg shadow-md p-4 flex flex-col">
                 {selectedCity ? (
                   <>
-                    <p className="text-gray-600 text-sm md:text-base mb-4">
+                    <div className="flex flex-col items-center">
+                    <p className="text-gray-600 text-sm md:text-base mb-4 font-primary">
                       Earthquake history for {selectedCity}:
                     </p>
-                    <div className="flex-grow">
+                    </div>
+                    <div className="flex-grow flex justify-center items-center">
                       <TrendChart earthquakes={filteredEarthquakes} />
                     </div>
                   </>
@@ -533,6 +535,7 @@ export default function Home() {
                   </p>
                 )}
               </div>
+
 
               
             </div>
