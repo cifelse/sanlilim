@@ -34,9 +34,10 @@ interface NavbarProps {
   isEarthquakeSection: boolean;
   activeSection: string;
   smoothScroll: (id: string) => void;
+  onOpenModal: () => void;  // New prop for opening the modal
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isEarthquakeSection, activeSection, smoothScroll }) => {
+const Navbar: React.FC<NavbarProps> = ({ isEarthquakeSection, activeSection, smoothScroll, onOpenModal }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -77,12 +78,20 @@ const Navbar: React.FC<NavbarProps> = ({ isEarthquakeSection, activeSection, smo
               {link.text}
             </NavLink>
           ))}
-          <button className={`font-primary border-2 px-4 py-2 rounded transition-colors duration-300 tracking-tighter ${isEarthquakeSection ? 'text-[#F05454] border-[#F05454] hover:bg-[#F05454] hover:text-[#F6F4E6]' : 'text-white border-white hover:bg-white hover:text-[#F05454]'}`}>
+          <button 
+            onClick={onOpenModal}
+            className={`font-primary border-2 px-4 py-2 rounded transition-colors duration-300 tracking-tighter ${
+              isEarthquakeSection 
+                ? 'text-[#F05454] border-[#F05454] hover:bg-[#F05454] hover:text-[#F6F4E6]' 
+                : 'text-white border-white hover:bg-white hover:text-[#F05454]'
+            }`}
+          >
             LIST A PLACE AS SHELTER
           </button>
         </div>
       </div>
 
+      {/* Mobile */}
       <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-4`}>
         {navLinks.map((link) => (
           <NavLink
@@ -100,7 +109,17 @@ const Navbar: React.FC<NavbarProps> = ({ isEarthquakeSection, activeSection, smo
             {link.text}
           </NavLink>
         ))}
-        <button className={`w-full text-center font-primary border-2 px-4 py-2 mt-2 rounded transition-colors duration-300 tracking-tighter ${isEarthquakeSection ? 'text-[#F05454] border-[#F05454] hover:bg-[#F05454] hover:text-[#F6F4E6]' : 'text-white border-white hover:bg-white hover:text-[#F05454]'}`}>
+        <button 
+          onClick={() => {
+            onOpenModal();
+            toggleMenu();
+          }}
+          className={`w-full text-center font-primary border-2 px-4 py-2 mt-2 rounded transition-colors duration-300 tracking-tighter ${
+            isEarthquakeSection 
+              ? 'text-[#F05454] border-[#F05454] hover:bg-[#F05454] hover:text-[#F6F4E6]' 
+              : 'text-white border-white hover:bg-white hover:text-[#F05454]'
+          }`}
+        >
           LIST A PLACE AS SHELTER
         </button>
       </div>

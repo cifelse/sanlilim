@@ -9,6 +9,8 @@ import { getImage } from '../utils/google';
 import sheltersDataJson from '../../public/data/shelters.json';
 import earthquakesDataJson from '../../public/data/earthquakes.json';
 import Navbar from './components/Navbar';
+import ListShelterModal, { ShelterData } from './components/ListShelterModal';
+import TrendChart from './components/TrendChart';
 import Papa from 'papaparse';
 
 type Location = {
@@ -19,6 +21,22 @@ type Location = {
 };
 
 export default function Home() {
+  // Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Function to handle modal open
+  const handleOpenModal = () => setIsModalOpen(true);
+
+  // Function to handle modal close
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  // Function to handle shelter submission
+  const handleShelterSubmit = (shelterData: ShelterData) => {
+    console.log('New shelter data:', shelterData);
+    // Here you would typically send this data to your backend
+    //
+  };
+
   // Shelter Finder
   const [isLoading, setIsLoading] = useState(true);
   const [image, setImage] = useState<string>("");
@@ -198,6 +216,26 @@ export default function Home() {
     }
   }, [shelterSelectedProvince, shelterSelectedCity, locations]);
 
+  const [filteredEarthquakes, setFilteredEarthquakes] = useState([]);
+
+  // Update filtered earthquakes when city or earthquakes data changes
+  const MAX_EARTHQUAKES: any = 30; // You can adjust this number as needed
+  const UPPER_MAGNITUDE: any = 3.5;
+
+  useEffect(() => {
+    if (selectedCity && earthquakesDataJson) {
+      const cityEarthquakes: any = earthquakesDataJson
+        .filter(eq => {
+          return (eq.location.toLowerCase().includes(selectedCity.toLowerCase())) &&
+                (eq.magnitude >= UPPER_MAGNITUDE);
+        })
+        .sort((a, b) => b.datetime - a.datetime) // Sort by date, most recent first
+        .slice(0, MAX_EARTHQUAKES); // Take only the most recent MAX_EARTHQUAKES
+
+      setFilteredEarthquakes(cityEarthquakes);
+    }
+  }, [selectedCity, earthquakesDataJson]);
+
   return (
     <div className="flex flex-col min-h-screen font-sans">
       {/* Navbar */}
@@ -205,6 +243,7 @@ export default function Home() {
         isEarthquakeSection={isEarthquakeSection}
         activeSection={activeSection}
         smoothScroll={smoothScroll}
+        onOpenModal={handleOpenModal}  // Pass the function to open the modal
       />
 
       {/* Main Content */}
@@ -385,7 +424,8 @@ export default function Home() {
                 onChange={(e) => setMagnitude(parseFloat(e.target.value))}
                 className="w-full"
               />
-              <p className="text-white text-center mt-2">Magnitude: {magnitude}</p>
+              <p className="text-white text-center mt-2">Magnitude: {"\>\="} {magnitude}</p>
+              <p className="text-white text-center mt-2 text-sm"><i>{"(Filter the Magnitude by moving the slider)"}</i></p>
             </div>
 
             {/* Info Boxes */}
@@ -427,7 +467,8 @@ export default function Home() {
                 onChange={(e) => setMagnitude(parseFloat(e.target.value))}
                 className="w-full mt-4"
               />
-              <p className="text-white text-center mt-2">Magnitude: {magnitude}</p>
+              <p className="text-white text-center mt-2">Magnitude: {"\>\="} {magnitude}</p>
+              <p className="text-white text-center mt-2 text-sm"><i>{"(Filter the Magnitude by moving the slider)"}</i></p>
             </div>
 
             {/* Right Side - Details */}
@@ -480,9 +521,18 @@ export default function Home() {
               {/* 3rd Row: Additional Details */}
               <div className="flex-grow bg-white rounded-lg shadow-md p-4">
                 <h3 className="font-bold mb-2">ADDITIONAL DETAILS</h3>
-                <p className="text-gray-600 text-sm md:text-base">
-                  Additional earthquake and location details will be displayed here.
-                </p>
+                {selectedCity ? (
+                  <>
+                    <p className="text-gray-600 text-sm md:text-base mb-4">
+                      Earthquake history for {selectedCity}:
+                    </p>
+                    <TrendChart earthquakes={filteredEarthquakes} />
+                  </>
+                ) : (
+                  <p className="text-gray-600 text-sm md:text-base">
+                    Please select a city to view earthquake details.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -495,6 +545,15 @@ export default function Home() {
           <p className="uppercase text-sm">&copy; 2024 SANLILIM. ALL RIGHTS RESERVED.</p>
         </div>
       </footer>
+
+      {/* Add the modal component */}
+      <ListShelterModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleShelterSubmit}
+        provinces={provinces}
+        cities={locations.filter(loc => loc.Province === shelterSelectedProvince).map(loc => loc.City)}
+      />
     </div>
   );
 }
