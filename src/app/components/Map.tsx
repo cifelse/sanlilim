@@ -4,10 +4,7 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 interface MapProps {
     markers: Shelter[];
     style?: React.CSSProperties;
-    center?: { 
-        lat: number, 
-        lng: number 
-    };
+    center?: [number, number] | null;
     zoom?: number;
 };
 

@@ -140,8 +140,8 @@ export default function Home() {
   const [shelterSelectedProvince, setShelterSelectedProvince] = useState('');
   const [shelterSelectedCity, setShelterSelectedCity] = useState('');
 
-  const [shelterMapCenter, setShelterMapCenter] = useState<[number, number]>(null);
-  
+  const [shelterMapCenter, setShelterMapCenter] = useState<[number, number] | null>(null);
+
   useEffect(() => {
     if (shelterSelectedProvince && shelterSelectedCity) {
       const selectedLocation = locations.find(
