@@ -126,6 +126,7 @@ export default function Home() {
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
 
   const [population, setPopulation] = useState<any>(null);
+  const [numEvacs, setNumEvacs] = useState<any>(0);
 
   useEffect(() => {
     if (selectedProvince && selectedCity) {
@@ -168,6 +169,10 @@ export default function Home() {
         }
 
         setPopulation(population);
+
+        const countShelters = sheltersData.filter(shelter => shelter.city.toLowerCase().includes(selectedCity.toLowerCase())).length;
+        
+        setNumEvacs(countShelters);
       } catch (error) {
         console.error('Error fetching population data:', error);
       }
@@ -384,7 +389,7 @@ export default function Home() {
               {[
                 { label: 'Population', value: Math.round(population) == 0 ? "N/A" : Math.round(population) },
                 { label: 'Risk', value: 'N/A' },
-                { label: '# of Evacuation', value: 'N/A' }
+                { label: '# of Evacuation', value: Math.round(numEvacs) == 0 ? "N/A" : Math.round(numEvacs) },
               ].map((item) => (
               <div key={item.label} className="w-[30%] bg-white rounded-lg shadow-md p-2">
                 <h3 className="font-sans text-xs mb-1 text-center">{item.label}</h3>
@@ -459,7 +464,7 @@ export default function Home() {
                 {[
                   { label: 'Population', value: Math.round(population) == 0 ? "N/A" : Math.round(population) },
                   { label: 'Risk', value: 'N/A' },
-                  { label: '# of Evacuation', value: 'N/A' }
+                  { label: '# of Evacuation', value: Math.round(numEvacs) == 0 ? "N/A" : Math.round(numEvacs) },
                 ].map((item) => (
                   <div key={item.label} className="w-[30%] bg-white rounded-lg shadow-md p-4">
                     <h3 className="font-sans text-sm mb-2 text-center">{item.label}</h3>
