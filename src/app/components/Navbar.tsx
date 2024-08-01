@@ -42,8 +42,8 @@ const Navbar: React.FC<NavbarProps> = ({ isEarthquakeSection, activeSection, smo
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const navLinks = [
-    { href: "#shelter-finder", text: "SHELTER FINDER" },
-    { href: "#earthquake-monitor", text: "EARTHQUAKE MONITOR" },
+    { href: "#shelter-finder", text: "Shelter Finder" },
+    { href: "#earthquake-monitor", text: "QuakeMonitor" },
   ];
 
   return (

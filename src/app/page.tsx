@@ -9,6 +9,14 @@ import { getImage } from '../utils/google';
 import sheltersDataJson from '../../public/data/shelters.json';
 import earthquakesDataJson from '../../public/data/earthquakes.json';
 import Navbar from './components/Navbar';
+import Papa from 'papaparse';
+
+type Location = {
+  Province: string;
+  City: string;
+  Latitude: number;
+  Longitude: number;
+};
 
 export default function Home() {
   // Shelter Finder
@@ -20,6 +28,7 @@ export default function Home() {
   const [magnitude, setMagnitude] = useState(5.5);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [locations, setLocations] = useState<Location[]>([]);
 
   // Misc
   const [activeSection, setActiveSection] = useState('shelter-finder');
@@ -103,6 +112,47 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    fetch('/data/locations.csv')
+      .then(response => response.text())
+      .then(csv => {
+        const parsed = Papa.parse<Location>(csv, { header: true, dynamicTyping: true });
+        setLocations(parsed.data);
+      });
+  }, []);
+
+  const provinces = Array.from(new Set(locations.map(loc => loc.Province)));
+
+  const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
+
+  useEffect(() => {
+    if (selectedProvince && selectedCity) {
+      const selectedLocation = locations.find(
+        loc => loc.Province === selectedProvince && loc.City === selectedCity
+      );
+      if (selectedLocation) {
+        setMapCenter([selectedLocation.Latitude, selectedLocation.Longitude]);
+      }
+    }
+  }, [selectedProvince, selectedCity, locations]);
+
+  // Shelter Finder Dropdowns
+  const [shelterSelectedProvince, setShelterSelectedProvince] = useState('');
+  const [shelterSelectedCity, setShelterSelectedCity] = useState('');
+
+  const [shelterMapCenter, setShelterMapCenter] = useState<[number, number]>(null);
+  
+  useEffect(() => {
+    if (shelterSelectedProvince && shelterSelectedCity) {
+      const selectedLocation = locations.find(
+        loc => loc.Province === shelterSelectedProvince && loc.City === shelterSelectedCity
+      );
+      if (selectedLocation) {
+        setShelterMapCenter([selectedLocation.Latitude, selectedLocation.Longitude]);
+      }
+    }
+  }, [shelterSelectedProvince, shelterSelectedCity, locations]);
+
   return (
     <div className="flex flex-col min-h-screen font-sans">
       {/* Navbar */}
@@ -116,85 +166,137 @@ export default function Home() {
       <main className="flex-grow pt-16">
         
         {/* Shelter Finder Section */}
-        <section id="shelter-finder" className="bg-[#F6F4E6] min-h-screen flex flex-col md:flex-row p-4 md:p-8 uppercase">
+        <section id="shelter-finder" className="bg-[#F6F4E6] min-h-screen flex flex-col p-1 md:p-8">
+        <div className="text-center mb-4">
+          <h1 className="font-primary text-3xl md:text-4xl lg:text-5xl font-bold mb-2">Shelter Finder</h1>
+          <p className="text-base md:text-base text-gray-600 max-w-2xl mx-auto">
+            Locate nearby evacuation centers and shelters in your area. Select your province and city to find safe havens during emergencies.
+          </p>
+        </div>
 
-          {/* Left Side - Map (desktop only) */}
-          <div className="hidden md:block w-full md:w-1/2 p-4">
-            <Map markers={sheltersData} />
-          </div>
-
-          {/* Right Side - Shelter Details */}
-          <div className="w-full md:w-1/2 p-4 flex flex-col">
-            {/* Image and Name Placeholder */}
-            {isLoading ? (
-              <SkeletonBox className="h-40 md:h-1/3 mb-4" />
-            ) : (
-              <div className="h-40 md:h-1/3 bg-white rounded-lg shadow-md mb-4 relative overflow-hidden">
-                
-                <Image 
-                  src={image}
-                  alt={selectedShelter?.name ?? "Shelter"}
-                  layout="fill"
-                  objectFit="cover"
-                />
-                
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C2C2C] to-transparent text-white p-4">
-                  <p className="font-primary text-xl md:text-2xl lg:text-3xl font-bold">
-                    {selectedShelter?.name?.toUpperCase() || "SELECT A SHELTER"}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Info Boxes */}
-            <div className="flex justify-between mb-4">
-              {[
-                { label: 'CAPACITY', value: selectedShelter?.capacity ?? "N/A" },
-                { label: 'CITY', value: selectedShelter?.city?.toUpperCase() ?? "N/A" },
-                { label: 'TYPE', value: selectedShelter?.type?.toUpperCase() ?? "N/A" }
-              ].map((item) => (
-                <div key={item.label} className="w-[30%]">
-                  {isLoading ? (
-                    <SkeletonBox className="h-24" />
-                  ) : (
-                    <div className="bg-white rounded-lg shadow-md p-2 md:p-4">
-                      <h3 className="font-sans text-xs md:text-sm mb-1 md:mb-2 text-center">{item.label}</h3>
-                      <p className="font-primary text-sm md:text-xl text-center text-gray-600">{item.value}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+          <div className="flex flex-col md:flex-row flex-grow uppercase">
+            {/* Left Side - Map (desktop only) */}
+            <div className="hidden md:block w-full md:w-1/2 p-4">
+              <Map markers={sheltersData} center={shelterMapCenter} />
             </div>
 
-            {/* Map (mobile only) */}
-            <div className="md:hidden w-full h-64 mb-4">
-              <Map markers={sheltersData} />
-            </div>
+            {/* Right Side - Shelter Details */}
+            <div className="w-full md:w-1/2 p-4 flex flex-col">
 
-            {/* Additional Details */}
-            {isLoading ? (
-              <SkeletonBox className="flex-grow" />
-            ) : (
-              <div className="flex-grow bg-white rounded-lg shadow-md p-4">
-                <h3 className="font-bold mb-2">HOW TO GO THERE</h3>
-                <p className="text-gray-600 text-sm md:text-base">De La Salle University is a private, Catholic research university located in Taft Avenue, Malate, Manila, Philippines. It was founded in 1911 by the Brothers of the Christian Schools and is the first De La Salle school in the Philippines.</p>
+              {/* Dropdowns */}
+              <div className="flex flex-col md:flex-row md:justify-between mb-4 space-y-4 md:space-y-0 md:space-x-4">
+                <select 
+                  className="w-full md:w-[48%] p-2 rounded"
+                  value={shelterSelectedProvince}
+                  onChange={(e) => {
+                    setShelterSelectedProvince(e.target.value);
+                    setShelterSelectedCity('');
+                  }}
+                >
+                  <option value="">SELECT PROVINCE</option>
+                  {provinces.map(province => (
+                    <option key={province} value={province}>{province ? province.toUpperCase() : null}</option>
+                  ))}
+                </select>
+                <select 
+                  className="w-full md:w-[48%] p-2 rounded"
+                  value={shelterSelectedCity}
+                  onChange={(e) => setShelterSelectedCity(e.target.value)}
+                >
+                  <option value="">SELECT CITY/MUNICIPALITY</option>
+                  {locations
+                    .filter(loc => loc.Province === shelterSelectedProvince)
+                    .map(loc => (
+                      <option key={loc.City} value={loc.City}>{loc.City.toUpperCase()}</option>
+                    ))
+                  }
+                </select>
               </div>
-            )}
+
+              {/* Image and Name Placeholder */}
+              {isLoading ? (
+                <SkeletonBox className="h-40 md:h-1/3 mb-4" />
+              ) : (
+                <div className="h-40 md:h-1/3 bg-white rounded-lg shadow-md mb-4 relative overflow-hidden">
+                  
+                  <Image 
+                    src={image}
+                    alt={selectedShelter?.name ?? "Shelter"}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                  
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C2C2C] to-transparent text-white p-4">
+                    <p className="font-primary text-xl md:text-2xl lg:text-3xl font-bold">
+                      {selectedShelter?.name?.toUpperCase() || "SELECT A SHELTER"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Info Boxes */}
+              <div className="flex justify-between mb-4">
+                {[
+                  { label: 'CAPACITY', value: selectedShelter?.capacity ?? "N/A" },
+                  { label: 'CITY', value: selectedShelter?.city?.toUpperCase() ?? "N/A" },
+                  { label: 'TYPE', value: selectedShelter?.type?.toUpperCase() ?? "N/A" }
+                ].map((item) => (
+                  <div key={item.label} className="w-[30%]">
+                    {isLoading ? (
+                      <SkeletonBox className="h-24" />
+                    ) : (
+                      <div className="bg-white rounded-lg shadow-md p-2 md:p-4">
+                        <h3 className="font-sans text-xs md:text-sm mb-1 md:mb-2 text-center">{item.label}</h3>
+                        <p className="font-primary text-sm md:text-xl text-center text-gray-600">{item.value}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Map (mobile only) */}
+              <div className="md:hidden w-full h-64 mb-4">
+                <Map markers={sheltersData} center={shelterMapCenter} />
+              </div>
+
+              {/* Additional Details */}
+              {isLoading ? (
+                <SkeletonBox className="flex-grow" />
+              ) : (
+                <div className="flex-grow bg-white rounded-lg shadow-md p-4">
+                  <h3 className="font-bold mb-2">HOW TO GO THERE</h3>
+                  <p className="text-gray-600 text-sm md:text-base">De La Salle University is a private, Catholic research university located in Taft Avenue, Malate, Manila, Philippines. It was founded in 1911 by the Brothers of the Christian Schools and is the first De La Salle school in the Philippines.</p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
         {/* Earthquake Monitor Section */}
-        <section id="earthquake-monitor" className="bg-[#F05454] min-h-screen flex flex-col md:flex-row p-4 md:p-8">
+        <section id="earthquake-monitor" className="bg-[#F05454] min-h-screen flex flex-col p-4 md:p-8">
+          <div className="text-center mb-8">
+            <h1 className="font-primary text-3xl md:text-4xl lg:text-5xl font-bold mb-2 text-white">QuakeMonitor</h1>
+            <p className="text-base md:text-base text-white opacity-90 max-w-2xl mx-auto">
+              View Earthquakes that happened in the Past.
+            </p>
+          </div>
+          
           {/* Mobile View */}
           <div className="md:hidden w-full flex flex-col space-y-4">
+
             {/* Province Dropdown */}
             <select 
               className="w-full p-2 rounded"
               value={selectedProvince}
-              onChange={(e) => setSelectedProvince(e.target.value)}
+              onChange={(e) => {
+                setSelectedProvince(e.target.value);
+                setSelectedCity(''); // Reset city when province changes
+              }}
             >
               <option value="">Select Province</option>
-              {/* Add province options here */}
+              {provinces.map(province => (
+                <option key={province} value={province}>{province}</option>
+              ))}
             </select>
 
             {/* City/Municipality Dropdown */}
@@ -204,12 +306,17 @@ export default function Home() {
               onChange={(e) => setSelectedCity(e.target.value)}
             >
               <option value="">Select City/Municipality</option>
-              {/* Add city options here */}
+              {locations
+                .filter(loc => loc.Province === selectedProvince)
+                .map(loc => (
+                  <option key={loc.City} value={loc.City}>{loc.City}</option>
+                ))
+              }
             </select>
 
             {/* Map */}
             <div className="h-64 relative">
-              <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} />
+              <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} center={mapCenter} />
             </div>
 
             {/* Slider */}
@@ -246,11 +353,11 @@ export default function Home() {
           </div>
 
           {/* Desktop View */}
-          <div className="hidden md:flex w-full">
+          <div className="hidden md:flex w-full flex-grow">
             {/* Left Side - Earthquake Map */}
             <div className="w-1/2 p-4 flex flex-col">
               <div className="flex-grow relative">
-                <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} />
+                <EarthquakeMap earthquakes={earthquakesDataJson} magnitude={magnitude} center={mapCenter} />
               </div>
               <input
                 type="range"
@@ -271,24 +378,35 @@ export default function Home() {
                 <select 
                   className="w-[48%] p-2 rounded"
                   value={selectedProvince}
-                  onChange={(e) => setSelectedProvince(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedProvince(e.target.value);
+                    setSelectedCity(''); // Reset city when province changes
+                  }}
                 >
-                  <option value="">Select Province</option>
-                  {/* Add province options here */}
+                  <option value="">SELECT PROVINCE</option>
+                  {provinces.map(province => (
+                    <option key={province} value={province}>{province ? province.toUpperCase() : null}</option>
+                  ))}
                 </select>
+
                 <select 
                   className="w-[48%] p-2 rounded"
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                 >
-                  <option value="">Select City/Municipality</option>
-                  {/* Add city options here */}
+                  <option value="">SELECT CITY/MUNICIPALITY</option>
+                  {locations
+                    .filter(loc => loc.Province === selectedProvince)
+                    .map(loc => (
+                      <option key={loc.City} value={loc.City}>{loc.City.toUpperCase()}</option>
+                    ))
+                  }
                 </select>
               </div>
 
               {/* 2nd Row: Info Boxes */}
               <div className="flex justify-between mb-4">
-                {['Population', 'Risk', '# of Evacuation'].map((item) => (
+                {['POPULATION', 'RISK', 'NO. OF SHELTERS'].map((item) => (
                   <div key={item} className="w-[30%] bg-white rounded-lg shadow-md p-4">
                     <h3 className="font-sans text-sm mb-2 text-center">{item}</h3>
                     <p className="font-primary text-xl text-center text-gray-600">N/A</p>

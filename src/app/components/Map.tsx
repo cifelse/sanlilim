@@ -33,16 +33,18 @@ const DefaultSettings = {
       lat: 14.566439, 
       lng: 120.9902773,
     },
-    zoom: 14,
+    zoom: 13,
 };
 
 const Map: React.FC<MapProps> = ({ markers, style, center, zoom }) => {
+    
+
     return (
         <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GCP_API_KEY as string}>
             <GoogleMap
                 mapContainerStyle={style ?? DefaultSettings.style}
-                center={center ?? DefaultSettings.center}
-                zoom={zoom ?? DefaultSettings.zoom}
+                center={center ? { lat: center[0], lng: center[1] } : DefaultSettings.center}
+                zoom={zoom ?? (center ? 15: DefaultSettings.zoom)}
             >
                 {markers && markers.map((shelter: Shelter, index: number) => (
                     <Marker
