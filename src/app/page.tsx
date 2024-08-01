@@ -310,13 +310,17 @@ export default function Home() {
               ) : (
                 <div className="flex-grow bg-white rounded-lg shadow-md p-4">
                   <h3 className="font-bold mb-2">SAFETY TIPS</h3>
-                  <ul className="list-disc list-inside text-gray-600 text-sm md:text-base">
+                  {/* <ul className="list-disc list-inside text-gray-600 text-sm md:text-base">
                     <li>Stay calm and stay indoors during an earthquake.</li>
                     <li>Take cover under a sturdy piece of furniture or against an interior wall.</li>
                     <li>Avoid windows, glass, and other objects that may shatter.</li>
                     <li>If you are outdoors, move to an open area away from buildings, trees, and power lines.</li>
                     <li>After the shaking stops, check for injuries and damage, and be prepared for aftershocks.</li>
-                  </ul>  
+                  </ul>   */}
+
+                  <p className='text-gray-600'>
+                  During an earthquake, stay calm and indoors, taking cover under sturdy furniture or against an interior wall while avoiding windows and glass. If outside, move to an open area away from buildings, trees, and power lines. After the shaking stops, check for injuries and damage, and be prepared for aftershocks.
+                  </p>
                 </div>
               )}
             </div>
