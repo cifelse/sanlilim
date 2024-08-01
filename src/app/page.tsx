@@ -167,9 +167,9 @@ export default function Home() {
         
         {/* Shelter Finder Section */}
         <section id="shelter-finder" className="bg-[#F6F4E6] min-h-screen flex flex-col p-1 md:p-8">
-        <div className="text-center mb-4">
+        <div className="text-center mb-4 mt-5">
           <h1 className="font-primary text-3xl md:text-4xl lg:text-5xl font-bold mb-2">Shelter Finder</h1>
-          <p className="text-base md:text-base text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base md:text-base text-gray-600 max-w-2xl mx-auto italic leading-snug">
             Locate nearby evacuation centers and shelters in your area. Select your province and city to find safe havens during emergencies.
           </p>
         </div>
@@ -274,9 +274,9 @@ export default function Home() {
 
         {/* Earthquake Monitor Section */}
         <section id="earthquake-monitor" className="bg-[#F05454] min-h-screen flex flex-col p-4 md:p-8">
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 mt-3">
             <h1 className="font-primary text-3xl md:text-4xl lg:text-5xl font-bold mb-2 text-white">QuakeMonitor</h1>
-            <p className="text-base md:text-base text-white opacity-90 max-w-2xl mx-auto">
+            <p className="text-base md:text-base text-white opacity-90 max-w-2xl mx-auto italic">
               View Earthquakes that happened in the Past.
             </p>
           </div>
