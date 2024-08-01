@@ -125,6 +125,8 @@ export default function Home() {
 
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
 
+  const [population, setPopulation] = useState<number | null>(null);
+
   useEffect(() => {
     if (selectedProvince && selectedCity) {
       const selectedLocation = locations.find(
@@ -134,7 +136,45 @@ export default function Home() {
         setMapCenter([selectedLocation.Latitude, selectedLocation.Longitude]);
       }
     }
-  }, [selectedProvince, selectedCity, locations]);
+    const fetchData = async () => {
+      try {
+        if (!selectedCity) {
+          setPopulation(null);
+          return;
+        }
+
+        const cityStatsResponse = await fetch('https://psgc-api.wareneutron.com/api/city');
+        const cityStatsData = await cityStatsResponse.json();
+
+        const muniStatsResponse = await fetch('https://psgc-api.wareneutron.com/api/municipality');
+        const muniStatsData = await muniStatsResponse.json();
+
+        let population: any;
+
+        for (const city of cityStatsData[0].city) {
+          if (city.name.toLowerCase().includes(selectedCity.toLowerCase())) {
+            population = city.population;
+            break;
+          }
+        }
+
+        if (!population) {
+          for (const muni of muniStatsData[0].municipality) {
+            if (muni.name.toLowerCase().includes(selectedCity.toLowerCase())) {
+              population = muni.population;
+              break;
+            }
+          }
+        }
+
+        setPopulation(population);
+      } catch (error) {
+        console.error('Error fetching population data:', error);
+      }
+    };
+
+    fetchData();
+  }, [selectedCity]);
 
   // Shelter Finder Dropdowns
   const [shelterSelectedProvince, setShelterSelectedProvince] = useState('');
@@ -264,8 +304,14 @@ export default function Home() {
                 <SkeletonBox className="flex-grow" />
               ) : (
                 <div className="flex-grow bg-white rounded-lg shadow-md p-4">
-                  <h3 className="font-bold mb-2">HOW TO GO THERE</h3>
-                  <p className="text-gray-600 text-sm md:text-base">De La Salle University is a private, Catholic research university located in Taft Avenue, Malate, Manila, Philippines. It was founded in 1911 by the Brothers of the Christian Schools and is the first De La Salle school in the Philippines.</p>
+                  <h3 className="font-bold mb-2">SAFETY TIPS</h3>
+                  <ul className="list-disc list-inside text-gray-600 text-sm md:text-base">
+                    <li>Stay calm and stay indoors during an earthquake.</li>
+                    <li>Take cover under a sturdy piece of furniture or against an interior wall.</li>
+                    <li>Avoid windows, glass, and other objects that may shatter.</li>
+                    <li>If you are outdoors, move to an open area away from buildings, trees, and power lines.</li>
+                    <li>After the shaking stops, check for injuries and damage, and be prepared for aftershocks.</li>
+                  </ul>  
                 </div>
               )}
             </div>
@@ -335,11 +381,15 @@ export default function Home() {
 
             {/* Info Boxes */}
             <div className="flex justify-between">
-              {['Population', 'Risk', '# of Evacuation'].map((item) => (
-                <div key={item} className="w-[30%] bg-white rounded-lg shadow-md p-2">
-                  <h3 className="font-sans text-xs mb-1 text-center">{item}</h3>
-                  <p className="font-primary text-sm text-center text-gray-600">N/A</p>
-                </div>
+              {[
+                { label: 'Population', value: Math.round(population) == 0 ? "N/A" : Math.round(population) },
+                { label: 'Risk', value: 'N/A' },
+                { label: '# of Evacuation', value: 'N/A' }
+              ].map((item) => (
+              <div key={item.label} className="w-[30%] bg-white rounded-lg shadow-md p-2">
+                <h3 className="font-sans text-xs mb-1 text-center">{item.label}</h3>
+                <p className="font-primary text-sm text-center text-gray-600">{item.value ?? "N/A"}</p>
+              </div>
               ))}
             </div>
 
@@ -406,10 +456,14 @@ export default function Home() {
 
               {/* 2nd Row: Info Boxes */}
               <div className="flex justify-between mb-4">
-                {['POPULATION', 'RISK', 'NO. OF SHELTERS'].map((item) => (
+                {[
+                  { label: 'Population', value: Math.round(population) == 0 ? "N/A" : Math.round(population) },
+                  { label: 'Risk', value: 'N/A' },
+                  { label: '# of Evacuation', value: 'N/A' }
+                ].map((item) => (
                   <div key={item} className="w-[30%] bg-white rounded-lg shadow-md p-4">
-                    <h3 className="font-sans text-sm mb-2 text-center">{item}</h3>
-                    <p className="font-primary text-xl text-center text-gray-600">N/A</p>
+                    <h3 className="font-sans text-sm mb-2 text-center">{item.label}</h3>
+                    <p className="font-primary text-xl text-center text-gray-600">{item.value}</p>
                   </div>
                 ))}
               </div>
