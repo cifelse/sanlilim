@@ -424,7 +424,7 @@ export default function Home() {
                 onChange={(e) => setMagnitude(parseFloat(e.target.value))}
                 className="w-full"
               />
-              <p className="text-white text-center mt-2">Magnitude: {"\>\="} {magnitude}</p>
+              <p className="text-white text-center mt-2">Magnitude: {magnitude}</p>
               <p className="text-white text-center mt-2 text-sm"><i>{"(Filter the Magnitude by moving the slider)"}</i></p>
             </div>
 
@@ -432,8 +432,8 @@ export default function Home() {
             <div className="flex justify-between">
               {[
                 { label: 'Population', value: Math.round(population) == 0 ? "N/A" : Math.round(population) },
-                { label: 'Risk', value: 'N/A' },
                 { label: '# of Evacuation', value: Math.round(numEvacs) == 0 ? "N/A" : Math.round(numEvacs) },
+                { label: 'Division (People/Shelter)', value: population && numEvacs ? Math.round(Math.round(population) / Math.round(numEvacs)) : "N/A" },
               ].map((item) => (
               <div key={item.label} className="w-[30%] bg-white rounded-lg shadow-md p-2">
                 <h3 className="font-sans text-xs mb-1 text-center">{item.label}</h3>
@@ -444,7 +444,6 @@ export default function Home() {
 
             {/* Additional Details */}
             <div className="bg-white rounded-lg shadow-md p-4">
-              <h3 className="font-bold mb-2 text-sm">ADDITIONAL DETAILS</h3>
               <p className="text-gray-600 text-xs">
                 Additional earthquake and location details will be displayed here.
               </p>
@@ -467,7 +466,7 @@ export default function Home() {
                 onChange={(e) => setMagnitude(parseFloat(e.target.value))}
                 className="w-full mt-4"
               />
-              <p className="text-white text-center mt-2">Magnitude: {"\>\="} {magnitude}</p>
+              <p className="text-white text-center mt-2">Magnitude: {magnitude}</p>
               <p className="text-white text-center mt-2 text-sm"><i>{"(Filter the Magnitude by moving the slider)"}</i></p>
             </div>
 
@@ -508,8 +507,8 @@ export default function Home() {
               <div className="flex justify-between mb-4">
                 {[
                   { label: 'Population', value: Math.round(population) == 0 ? "N/A" : Math.round(population) },
-                  { label: 'Risk', value: 'N/A' },
                   { label: '# of Evacuation', value: Math.round(numEvacs) == 0 ? "N/A" : Math.round(numEvacs) },
+                  { label: 'Division (People/Shelter)', value: population && numEvacs ? Math.round(Math.round(population) / Math.round(numEvacs)) : "N/A" },
                 ].map((item) => (
                   <div key={item.label} className="w-[30%] bg-white rounded-lg shadow-md p-4">
                     <h3 className="font-sans text-sm mb-2 text-center">{item.label}</h3>
@@ -518,15 +517,15 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* 3rd Row: Additional Details */}
-              <div className="flex-grow bg-white rounded-lg shadow-md p-4">
-                <h3 className="font-bold mb-2">ADDITIONAL DETAILS</h3>
+              <div className="flex-grow bg-white rounded-lg shadow-md p-4 flex flex-col">
                 {selectedCity ? (
                   <>
                     <p className="text-gray-600 text-sm md:text-base mb-4">
                       Earthquake history for {selectedCity}:
                     </p>
-                    <TrendChart earthquakes={filteredEarthquakes} />
+                    <div className="flex-grow">
+                      <TrendChart earthquakes={filteredEarthquakes} />
+                    </div>
                   </>
                 ) : (
                   <p className="text-gray-600 text-sm md:text-base">
@@ -534,6 +533,8 @@ export default function Home() {
                   </p>
                 )}
               </div>
+
+              
             </div>
           </div>
         </section>

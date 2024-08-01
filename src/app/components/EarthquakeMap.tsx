@@ -42,7 +42,7 @@ const EarthquakeMap: React.FC<EarthquakeMapProps> = ({ earthquakes, magnitude, c
         key={refreshKey}  // This forces re-render
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={chosenCenter}
-        zoom={chosenCenter.lat === 12.8797 ? 6 : 13}
+        zoom={chosenCenter.lat === 12.8797 ? 6 : 10}
       >
         {filteredEarthquakes.map((eq, index) => (
           <Circle
