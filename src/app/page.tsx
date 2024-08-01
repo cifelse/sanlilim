@@ -125,7 +125,7 @@ export default function Home() {
 
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
 
-  const [population, setPopulation] = useState<number | null>(null);
+  const [population, setPopulation] = useState<any>(null);
 
   useEffect(() => {
     if (selectedProvince && selectedCity) {
@@ -461,7 +461,7 @@ export default function Home() {
                   { label: 'Risk', value: 'N/A' },
                   { label: '# of Evacuation', value: 'N/A' }
                 ].map((item) => (
-                  <div key={item} className="w-[30%] bg-white rounded-lg shadow-md p-4">
+                  <div key={item.label} className="w-[30%] bg-white rounded-lg shadow-md p-4">
                     <h3 className="font-sans text-sm mb-2 text-center">{item.label}</h3>
                     <p className="font-primary text-xl text-center text-gray-600">{item.value}</p>
                   </div>
